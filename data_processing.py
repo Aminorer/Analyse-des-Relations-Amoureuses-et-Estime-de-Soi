@@ -7,18 +7,18 @@ import streamlit as st
 from config import *
 
 @st.cache_data
-def load_data(file_path):
+def load_data(file_source):
     """
-    Charge les données depuis le fichier Excel avec mise en cache
+    Charge les données depuis un fichier Excel avec mise en cache
     
     Args:
-        file_path: Chemin vers le fichier Excel
+        file_source: Chemin vers le fichier Excel (str) ou fichier uploadé (UploadedFile)
         
     Returns:
         DataFrame pandas avec les données nettoyées
     """
     # Charger avec la deuxième ligne comme header
-    df = pd.read_excel(file_path, header=1)
+    df = pd.read_excel(file_source, header=1)
     
     # Nettoyer les noms de colonnes (enlever les espaces superflus)
     df.columns = df.columns.str.strip()

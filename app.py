@@ -26,48 +26,108 @@ st.set_page_config(
 # ============================================================================
 
 @st.cache_data
-def load_and_prepare_data():
-    """Charge et prépare les données avec cache"""
-    # Essayer plusieurs chemins possibles
+def load_and_prepare_data_from_file(uploaded_file):
+    """Charge et prépare les données depuis un fichier uploadé"""
+    df = load_data(uploaded_file)
+    df = apply_labels(df)
+    return df
+
+@st.cache_data
+def load_and_prepare_data_from_path():
+    """Charge et prépare les données depuis un chemin local (fallback)"""
+    import os
     possible_paths = [
-        './Etudes_relations_amoureuses.xlsx',  # Dossier courant
-        'Etudes_relations_amoureuses.xlsx',  # Dossier courant (sans ./)
-        '../Etudes_relations_amoureuses.xlsx',  # Dossier parent
-        '/mnt/user-data/uploads/Etudes_relations_amoureuses.xlsx',  # Chemin original
+        './Etudes_relations_amoureuses.xlsx',
+        'Etudes_relations_amoureuses.xlsx',
+        '../Etudes_relations_amoureuses.xlsx',
+        '/mnt/user-data/uploads/Etudes_relations_amoureuses.xlsx',
     ]
     
-    import os
     file_path = None
     for path in possible_paths:
         if os.path.exists(path):
             file_path = path
             break
     
-    if file_path is None:
-        st.error("""
-        ❌ **Fichier Excel introuvable !**
-        
-        Le fichier `Etudes_relations_amoureuses.xlsx` n'a pas été trouvé.
-        
-        **Solution** : Placez le fichier Excel dans le même dossier que `app.py`
-        
-        Ou modifiez le chemin à la ligne 40 de `app.py` :
-        ```python
-        file_path = 'VOTRE_CHEMIN/Etudes_relations_amoureuses.xlsx'
-        ```
-        """)
-        st.stop()
-    
-    df = load_data(file_path)
-    df = apply_labels(df)
-    return df
+    if file_path:
+        df = load_data(file_path)
+        df = apply_labels(df)
+        return df
+    return None
+
+# Interface d'upload de fichier
+st.markdown("## 📂 Chargement des données")
+
+uploaded_file = st.file_uploader(
+    "Téléchargez votre fichier Excel (format attendu : Etudes_relations_amoureuses.xlsx)",
+    type=['xlsx', 'xls'],
+    help="Le fichier doit contenir 2 lignes d'en-tête et 39 colonnes de données"
+)
 
 # Charger les données
-try:
-    df_original = load_and_prepare_data()
-except Exception as e:
-    st.error(f"❌ Erreur lors du chargement des données : {e}")
-    st.stop()
+df_original = None
+
+if uploaded_file is not None:
+    try:
+        with st.spinner('📊 Chargement des données en cours...'):
+            df_original = load_and_prepare_data_from_file(uploaded_file)
+        st.success(f"✅ Fichier chargé avec succès ! ({len(df_original)} participants)")
+    except Exception as e:
+        st.error(f"❌ Erreur lors du chargement du fichier : {e}")
+        st.info("""
+        **Vérifiez que votre fichier :**
+        - Est au format Excel (.xlsx ou .xls)
+        - Contient 2 lignes d'en-tête
+        - A 39 colonnes (id_participants, Age, Genre, Etude, Items 4-34, Totaux)
+        """)
+        st.stop()
+else:
+    # Essayer de charger depuis un fichier local (pour développement)
+    df_original = load_and_prepare_data_from_path()
+    
+    if df_original is None:
+        st.info("""
+        ### 👋 Bienvenue dans l'application d'analyse !
+        
+        Pour commencer, veuillez **télécharger votre fichier Excel** en utilisant 
+        le bouton ci-dessus.
+        
+        #### 📋 Format attendu du fichier :
+        
+        - **Format** : Excel (.xlsx ou .xls)
+        - **En-têtes** : 2 lignes (titres des sections + noms des items)
+        - **Colonnes** : 39 colonnes au total
+        
+        #### 📊 Structure des données :
+        
+        1. **Variables sociodémographiques** (4 colonnes)
+           - id_participants, Age, Genre, Etude
+        
+        2. **Variables relationnelles** (4 colonnes)
+           - Item4 (Situation), Item5 (Durée), Item6 (Cohabitation), Item7 (Satisfaction)
+        
+        3. **Estime de Soi** (10 items + 1 total)
+           - Items 8 à 17, Total ES
+        
+        4. **Valorisation** (5 items + 1 total)
+           - Items 18 à 22, Total valo
+        
+        5. **Manque de Reconnaissance** (6 items + 1 total)
+           - Items 23 à 28, Total MR
+        
+        6. **Gestion des Conflits** (6 items + 1 total)
+           - Items 29 à 34, Total GC
+        
+        ---
+        
+        **🔒 Confidentialité** : Vos données restent privées et ne sont jamais sauvegardées 
+        sur le serveur. Elles sont traitées uniquement dans votre session.
+        """)
+        st.stop()
+    else:
+        st.info("ℹ️ Fichier local détecté et chargé. Pour utiliser vos propres données, uploadez un fichier ci-dessus.")
+
+st.markdown("---")
 
 # ============================================================================
 # SIDEBAR - FILTRES

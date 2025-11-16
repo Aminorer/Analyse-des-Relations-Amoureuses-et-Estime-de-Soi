@@ -73,19 +73,33 @@ Filtres disponibles dans la sidebar :
 pip install -r requirements.txt
 ```
 
-### 2. Placer le fichier de données
-
-Assurez-vous que le fichier `Etudes_relations_amoureuses.xlsx` est dans le bon chemin :
-- Par défaut : `/mnt/user-data/uploads/Etudes_relations_amoureuses.xlsx`
-- Ou modifiez le chemin ligne 37 de `app.py`
-
-### 3. Lancer l'application
+### 2. Lancer l'application
 
 ```bash
 streamlit run app.py
 ```
 
 L'application s'ouvrira automatiquement dans votre navigateur à l'adresse : `http://localhost:8501`
+
+### 3. Charger vos données
+
+**📤 Upload de fichier (Recommandé)**
+
+L'application utilise un système d'**upload de fichier** pour garantir la confidentialité de vos données :
+
+1. Cliquez sur le bouton "Browse files" dans l'interface
+2. Sélectionnez votre fichier Excel (`.xlsx` ou `.xls`)
+3. Les données sont chargées et l'analyse commence automatiquement
+
+✅ **Avantages** :
+- 🔒 Vos données restent privées (jamais sauvegardées sur le serveur)
+- 🌍 Idéal pour le déploiement sur Streamlit Cloud
+- 👥 Chaque utilisateur peut analyser ses propres données
+- 🔄 Changement de fichier facile
+
+**ℹ️ Mode développement**
+
+Si un fichier `Etudes_relations_amoureuses.xlsx` est présent dans le dossier du projet, il sera chargé automatiquement (pratique pour le développement local).
 
 ## 📊 Structure des Données
 
